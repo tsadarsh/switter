@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Start Web driver and init browser session
+./chromedriver &
+curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq
+
+# enter Session ID
+echo -e "sid: "
+read sid
+
+# request twitter login
+curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url
+
+#quit session
+echo -e "q to exit: "
+read q
