@@ -2,15 +2,21 @@
 
 # Start Web driver and init browser session
 ./chromedriver &
-curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq
+sid=$(curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId')
 
 # enter Session ID
-echo -e "sid: "
+echo "current sid: $sid"
+echo -e "enter sid: "
 read sid
 
 # request twitter login
-curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url
+curl -d '{"url":"https://www.google.com"}' http://localhost:9515/session/$sid/url
+curl -d '{"using":"name", "value":"q"}' https://localhost:9515/session/$sid/element
 
 #quit session
-echo -e "q to exit: "
-read q
+echo -e "\nExiting..."
+netstat -tulpn | grep "chromedrive"
+echo -e "\nenter pid to kill: "
+read pid
+curl -X DELETE http://localhost:9515/session/$sid
+kill $pid
