@@ -10,9 +10,11 @@ echo -e "enter sid: "
 read sid
 
 # request twitter login
-curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url
+curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url | jq
 
 # enter username
+echo -e "\nEnter after page finishes loading..."
+read null
 curl -d '{"using":"name","value":"session[username_or_email]"}' http://localhost:9515/session/$sid/element | jq
 echo -e "\nenter username element id: "
 read username_elem_id
@@ -23,6 +25,12 @@ curl -d '{"using":"name","value":"session[password]"}' http://localhost:9515/ses
 echo -e "\nenter password element id: "
 read password_elem_id
 curl -d '{"value":["atsTwi@0707"]}' http://localhost:9515/session/$sid/element/$password_elem_id/value | jq
+
+# click Log in
+curl -d '{"using":"class name","value":"css-18t94o4"}' http://localhost:9515/session/$sid/element | jq
+echo -e "\nenter Log in button element id: "
+read login_element_id
+curl -d '{}' http://localhost:9515/session/$sid/element/$login_element_id/click | jq
 
 #quit session
 echo -e "\nExiting..."
