@@ -23,6 +23,10 @@ read yesNo
 login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' http://localhost:9515/session/$sid/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
 curl -d '{}' http://localhost:9515/session/$sid/element/$login_element_id/click | jq
 
+# goto bookmarks
+echo -e "\nGoing to bookmarks"
+curl -d '{"url":"https://twitter.com/i/bookmarks"}' http://localhost:9515/session/$sid/url | jq
+
 #quit session
 echo -e "\nExiting..."
 netstat -tulpn | grep "chromedrive"
