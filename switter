@@ -26,6 +26,17 @@ curl -d '{}' http://localhost:9515/session/$sid/element/$login_element_id/click 
 # goto bookmarks
 echo -e "\nGoing to bookmarks"
 curl -d '{"url":"https://twitter.com/i/bookmarks"}' http://localhost:9515/session/$sid/url | jq
+echo -e "\nLoading complete? "
+read null
+
+# get each bookmark element
+bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' http://localhost:9515/session/$sid/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2)
+aDOM=()
+aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' http://localhost:9515/session/$sid/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+for t in ${aDOM[@]}
+do
+  curl -g http://localhost:9515/session/$sid/element/$t/attribute/href | jq '.value'
+done
 
 #quit session
 echo -e "\nExiting..."
