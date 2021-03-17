@@ -29,6 +29,9 @@ curl -d '{"url":"https://twitter.com/i/bookmarks"}' http://localhost:9515/sessio
 echo -e "\nLoading complete? "
 read null
 
+# get to bottom of page
+curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' http://localhost:9515/session/$sid/execute/sync
+
 # get each bookmark element
 bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' http://localhost:9515/session/$sid/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2)
 aDOM=()
