@@ -2,43 +2,46 @@
 
 # Start Web driver and init browser session
 ./chromedriver &
+
+#GLOBAL VARS
 sid=$(curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2)
+base_url=http://localhost:9515/session/$sid
 
 # request twitter login
-curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url | jq
+curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq
 echo -e "\nEnter after page finishes loading..."
 read null
 
 # enter username
-username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' http://localhost:9515/session/$sid/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{"value":["tsadarsh_me"]}' http://localhost:9515/session/$sid/element/$username_elem_id/value | jq
+username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
+curl -d '{"value":["tsadarsh_me"]}' $base_url/element/$username_elem_id/value | jq
 
 # enter password
-password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' http://localhost:9515/session/$sid/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{"value":["atsTwi@0707"]}' http://localhost:9515/session/$sid/element/$password_elem_id/value | jq
+password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
+curl -d '{"value":["atsTwi@0707"]}' $base_url/element/$password_elem_id/value | jq
 
 # click Log in
 echo -e "\nLog in? [y/n]: "
 read yesNo
-login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' http://localhost:9515/session/$sid/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{}' http://localhost:9515/session/$sid/element/$login_element_id/click | jq
+login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
+curl -d '{}' $base_url/element/$login_element_id/click | jq
 
 # goto bookmarks
 echo -e "\nGoing to bookmarks"
-curl -d '{"url":"https://twitter.com/i/bookmarks"}' http://localhost:9515/session/$sid/url | jq
+curl -d '{"url":"https://twitter.com/i/bookmarks"}' $base_url/url | jq
 echo -e "\nLoading complete? "
 read null
 
 # get to bottom of page
-curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' http://localhost:9515/session/$sid/execute/sync
+curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' $base_url/execute/sync
 
 # get each bookmark element
-bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' http://localhost:9515/session/$sid/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2)
+bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' $base_url/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2)
 aDOM=()
-aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' http://localhost:9515/session/$sid/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 for t in ${aDOM[@]}
 do
-  curl -g http://localhost:9515/session/$sid/element/$t/attribute/href | jq '.value'
+  curl -g $base_url/element/$t/attribute/href | jq '.value'
 done
 
 #quit session
@@ -46,5 +49,5 @@ echo -e "\nExiting..."
 netstat -tulpn | grep "chromedrive"
 echo -e "\nenter pid to kill: "
 read pid
-curl -X DELETE http://localhost:9515/session/$sid
+curl -X DELETE $base_url
 kill $pid
