@@ -41,7 +41,7 @@ aDOM=()
 aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 for t in ${aDOM[@]}
 do
-  curl -g $base_url/element/$t/attribute/href | jq '.value'
+  curl -g $base_url/element/$t/attribute/href | jq '.value' | cut -d'"' -f 2 >> yourbookmarks.md
 done
 
 #quit session
