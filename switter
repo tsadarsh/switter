@@ -4,8 +4,8 @@
 ./chromedriver &
 
 #GLOBAL VARS
-sid=$(curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2)
-base_url=http://localhost:9515/session/$sid
+sid=$(curl -# -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2)
+base_url="-# http://localhost:9515/session/$sid"
 
 # request twitter login
 curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq
@@ -46,8 +46,6 @@ done
 
 #quit session
 echo -e "\nExiting..."
-netstat -tulpn | grep "chromedrive"
-echo -e "\nenter pid to kill: "
-read pid
+pid=$(netstat -tulpn | grep -e "LISTEN.*chromedrive" -o | cut -d'N' -f2 | cut -d'/' -f 1 | uniq | xargs)
 curl -X DELETE $base_url
 kill $pid
