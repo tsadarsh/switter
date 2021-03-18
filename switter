@@ -12,19 +12,34 @@ curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq
 echo -e "\nEnter after page finishes loading..."
 read null
 
-# enter username
-username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{"value":["tsadarsh_me"]}' $base_url/element/$username_elem_id/value | jq
+# enter credentials
+echo -e "\nUsername: "
+read uname
+unameJSON='{"value":["'$uname'"]}'
 
-# enter password
+echo -e "\nPassword: "
+read pwd
+pwdJSON='{"value":["'$uname'"]}'
+
+username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
+curl -d $unameJSON $base_url/element/$username_elem_id/value | jq
+
 password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{"value":["atsTwi@0707"]}' $base_url/element/$password_elem_id/value | jq
+curl -d $pwdJSON $base_url/element/$password_elem_id/value | jq
 
 # click Log in
 echo -e "\nLog in? [y/n]: "
-read yesNo
-login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d '{}' $base_url/element/$login_element_id/click | jq
+read logIn
+if [ $logIn == "y" ]
+then
+	login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
+	curl -d '{}' $base_url/element/$login_element_id/click | jq
+elif [ $logIn == 'n' ]
+then
+	source ./kill.sh
+else
+	echo -e "\nI'm taking that as an Yes."
+fi
 
 # goto bookmarks
 echo -e "\nGoing to bookmarks"
@@ -45,7 +60,4 @@ do
 done
 
 #quit session
-echo -e "\nExiting..."
-pid=$(netstat -tulpn | grep -e "LISTEN.*chromedrive" -o | cut -d'N' -f2 | cut -d'/' -f 1 | uniq | xargs)
-curl -X DELETE $base_url
-kill $pid
+source ./kill.sh
