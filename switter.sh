@@ -6,52 +6,26 @@
 #GLOBAL VARS
 log=/dev/null
 sid=$(curl -# -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2) > $log
+echo -e "/nsession id: $sid"
 base_url="-# http://localhost:9515/session/$sid"
 
 # request twitter login
-curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq > $log
-# echo -e "\nEnter after page finishes loading..."
-# read null
-
-# enter credentials
-echo -e "\nUsername: "
-read uname
-unameJSON='{"value":["'$uname'"]}'
-
-echo -e "\nPassword: "
-read pwd
-pwdJSON='{"value":["'$uname'"]}'
-
-username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
-curl -d $unameJSON $base_url/element/$username_elem_id/value | jq > $log
-
-password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
-curl -d $pwdJSON $base_url/element/$password_elem_id/value | jq > $log
-
-# click Log in
-echo -e "\nLog in? [y/n]: "
-read logIn
-if [ $logIn == "y" ]
-then
-	login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
-	curl -d '{}' $base_url/element/$login_element_id/click | jq > $log
-elif [ $logIn == 'n' ]
-then
-	source ./kill.sh
-else
-	echo -e "\nI'm taking that as an Yes."
-fi
+source ./login.sh
 
 echo -n -e "\nLogging you in."
 timeout=0
-correct_target="https://twitter.com/i"
+correct_login="https://twitter.com/home"
 incorrect_login="https://twitter.com/login"
-while [[ $timeout -le 5 ]]; do
+while [[ true ]]; do
 	get_url=$(curl -s -g http://localhost:9515/session/$sid/url | jq '.value' | cut -d'"' -f 2) > $log
 	if [[ $get_url == $correct_login ]]; then
 		break
 	elif [[ $get_url =~ $incorrect_login.* ]]; then
 		echo -e "\nINCORRECT LOGIN!"
+		read null
+		source ./login.sh
+	elif [[ $timeout -ge 5 ]]; then
+		echo -e "/nTimeout exceeded."
 		source ./kill.sh
 	fi
 	echo -n .
