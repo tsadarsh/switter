@@ -4,13 +4,14 @@
 ./chromedriver &
 
 #GLOBAL VARS
-sid=$(curl -# -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2)
+log=/dev/null
+sid=$(curl -# -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2) > $log
 base_url="-# http://localhost:9515/session/$sid"
 
 # request twitter login
-curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq
-echo -e "\nEnter after page finishes loading..."
-read null
+curl -d '{"url":"https://twitter.com/login"}' $base_url/url | jq > $log
+# echo -e "\nEnter after page finishes loading..."
+# read null
 
 # enter credentials
 echo -e "\nUsername: "
@@ -21,19 +22,19 @@ echo -e "\nPassword: "
 read pwd
 pwdJSON='{"value":["'$uname'"]}'
 
-username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d $unameJSON $base_url/element/$username_elem_id/value | jq
+username_elem_id=$(curl -d '{"using":"name","value":"session[username_or_email]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
+curl -d $unameJSON $base_url/element/$username_elem_id/value | jq > $log
 
-password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-curl -d $pwdJSON $base_url/element/$password_elem_id/value | jq
+password_elem_id=$(curl -d '{"using":"name","value":"session[password]"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
+curl -d $pwdJSON $base_url/element/$password_elem_id/value | jq > $log
 
 # click Log in
 echo -e "\nLog in? [y/n]: "
 read logIn
 if [ $logIn == "y" ]
 then
-	login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2)
-	curl -d '{}' $base_url/element/$login_element_id/click | jq
+	login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
+	curl -d '{}' $base_url/element/$login_element_id/click | jq > $log
 elif [ $logIn == 'n' ]
 then
 	source ./kill.sh
@@ -41,22 +42,39 @@ else
 	echo -e "\nI'm taking that as an Yes."
 fi
 
+echo -n -e "\nLogging you in."
+timeout=0
+correct_target="https://twitter.com/i"
+incorrect_login="https://twitter.com/login"
+while [[ $timeout -le 5 ]]; do
+	get_url=$(curl -s -g http://localhost:9515/session/$sid/url | jq '.value' | cut -d'"' -f 2) > $log
+	if [[ $get_url == $correct_login ]]; then
+		break
+	elif [[ $get_url =~ $incorrect_login.* ]]; then
+		echo -e "\nINCORRECT LOGIN!"
+		source ./kill.sh
+	fi
+	echo -n .
+	((timeout++))
+	sleep 1
+done
+
 # goto bookmarks
 echo -e "\nGoing to bookmarks"
-curl -d '{"url":"https://twitter.com/i/bookmarks"}' $base_url/url | jq
-echo -e "\nLoading complete? "
-read null
+curl -d '{"url":"https://twitter.com/i/bookmarks"}' $base_url/url | jq > $log
+echo -e "\nFile name to write: "
+read fileName
 
 # get to bottom of page
-curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' $base_url/execute/sync
+curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' $base_url/execute/sync > $log
 
 # get each bookmark element
-bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' $base_url/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2)
+bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' $base_url/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2) > $log
 aDOM=()
-aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2) > $log
 for t in ${aDOM[@]}
 do
-  curl -g $base_url/element/$t/attribute/href | jq '.value' | cut -d'"' -f 2 >> yourbookmarks.md
+  curl -g $base_url/element/$t/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
 done
 
 #quit session
