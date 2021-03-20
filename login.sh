@@ -23,7 +23,7 @@ echo -n -e "\nLog in? [y/n]: "
 read logIn
 if [ $logIn == "y" ]
 then
-	login_element_id=$(curl -d '{"using":"class name","value":"css-18t94o4"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
+	login_element_id=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div[2]/form/div/div[3]/div"}' $base_url/element | jq ".value.ELEMENT" | cut -d'"' -f 2) > $log
 	curl -d '{}' $base_url/element/$login_element_id/click | jq > $log
 elif [ $logIn == 'n' ]
 then

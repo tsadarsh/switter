@@ -6,7 +6,7 @@
 #GLOBAL VARS
 log=/dev/null
 sid=$(curl -# -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session | jq '.sessionId' | cut -d'"' -f 2) > $log
-echo -e "/nsession id: $sid"
+echo -e "session id: $sid"
 base_url="-# http://localhost:9515/session/$sid"
 
 # request twitter login
@@ -36,19 +36,37 @@ done
 # goto bookmarks
 echo -e "\nGoing to bookmarks"
 curl -d '{"url":"https://twitter.com/i/bookmarks"}' $base_url/url | jq > $log
+
+#get file name to write
 echo -e "\nFile name to write: "
 read fileName
 
 # get to bottom of page
 curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' $base_url/execute/sync > $log
 
-# get each bookmark element
-bmel=$(curl -d '{"using":"xpath","value":"/html/body/div/div/div/div[2]/main/div/div/div/div/div/div[2]/div/section/div/div/div"}' $base_url/element | jq '.value' | jq '.ELEMENT' | cut -d'"' -f 2) > $log
-aDOM=()
-aDOM+=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/element/$bmel/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2) > $log
-for t in ${aDOM[@]}
+# get each tweet link element
+tweets=$(curl -d '{"using":"xpath","value":"//div/div/article"}' $base_url/elements | jq '.value' | jq 'length')
+tlink_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+tname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/div[1]/a/div/div[1]/div[1]/span/span"}' $base_url/elements |  jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+echo -e "\nnumber of tweets found: $tweets"
+
+for t in ${tlink_string[@]}
 do
-  curl -g $base_url/element/$t/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	tlink_list+=($t)
+done
+
+# get name of each tweeter
+for t in ${tname_string[@]}
+do
+	tname_list+=($t)
+done
+
+i=0
+while [[ $i < $tweets ]]; do
+	echo "---" >> $fileName.md
+	curl -g $base_url/element/${tname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -g $base_url/element/${tlink_list[$i]}/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	((i++))
 done
 
 #quit session
