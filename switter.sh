@@ -48,18 +48,20 @@ curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' 
 tweets=$(curl -d '{"using":"xpath","value":"//div/div/article"}' $base_url/elements | jq '.value' | jq 'length')
 tlink_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 tname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/div[1]/a/div/div[1]/div[1]/span/span"}' $base_url/elements |  jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
-echo -e "\nnumber of tweets found: $tweets"
+echo -e "\n$tweets number of tweets found"
 
-for t in ${tlink_string[@]}
-do
-	tlink_list+=($t)
-done
+tname_list=($tname_string)
+tlink_list=($tlink_string)
+# for t in ${tlink_string[@]}
+# do
+# 	tlink_list+=($t)
+# done
 
-# get name of each tweeter
-for t in ${tname_string[@]}
-do
-	tname_list+=($t)
-done
+# # get name of each tweeter
+# for t in ${tname_string[@]}
+# do
+# 	tname_list+=($t)
+# done
 
 i=0
 while [[ $i < $tweets ]]; do
