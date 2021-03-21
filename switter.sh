@@ -46,28 +46,24 @@ curl -d '{"script":"window.scrollTo(0, document.body.scrollHeight)","args":[]}' 
 
 # get each tweet link element
 tweets=$(curl -d '{"using":"xpath","value":"//div/div/article"}' $base_url/elements | jq '.value' | jq 'length')
-tlink_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 tname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/div[1]/a/div/div[1]/div[1]/span/span"}' $base_url/elements |  jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+tuname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/div[1]/a/div/div[2]/div/span"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+tlink_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
+tdate_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a/time"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 echo -e "\n$tweets number of tweets found"
 
 tname_list=($tname_string)
+tuname_list=($tuname_string)
 tlink_list=($tlink_string)
-# for t in ${tlink_string[@]}
-# do
-# 	tlink_list+=($t)
-# done
-
-# # get name of each tweeter
-# for t in ${tname_string[@]}
-# do
-# 	tname_list+=($t)
-# done
+tdate_list=($tdate_string)
 
 i=0
 while [[ $i < $tweets ]]; do
 	echo "---" >> $fileName.md
 	curl -g $base_url/element/${tname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -g $base_url/element/${tuname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
 	curl -g $base_url/element/${tlink_list[$i]}/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -g $base_url/element/${tdate_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
 	((i++))
 done
 
