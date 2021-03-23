@@ -38,7 +38,7 @@ echo -e "\nGoing to bookmarks"
 curl -d '{"url":"https://twitter.com/i/bookmarks"}' $base_url/url | jq > $log
 
 #get file name to write
-echo -e "\nFile name to write: "
+echo -n -e "\nFile name to write: "
 read fileName
 
 # get to bottom of page
@@ -50,7 +50,7 @@ tname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/
 tuname_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/div[1]/a/div/div[2]/div/span"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 tlink_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
 tdate_string=$(curl -d '{"using":"xpath","value":"//div/div/article/div/div/div/div[2]/div[2]/div[1]/div/div/div[1]/a/time"}' $base_url/elements | jq '.value' | jq '.[]' | jq '.ELEMENT' | cut -d'"' -f 2)
-echo -e "\n$tweets number of tweets found"
+echo -e "\n$tweets found"
 
 tname_list=($tname_string)
 tuname_list=($tuname_string)

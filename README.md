@@ -1,7 +1,14 @@
-1. Start Webdriver
-  > ./chromedriver &
-2. Start chrome web session using curl:
-  > curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost/9515/session
-3. Save Session ID (sid)
-4. For request:
-  > curl -d '{"url":"https:www.google.com"}' http://localhost:9515/session/<sid>/url
+Switter scraps your Twitter bookmraks and gives you a markdown file with these information:
+ 1. Tweeter name
+ 2. Tweeter username
+ 3. URL of tweet
+ 4. Date of tweet
+
+Run `./switter` after making it an executable
+ > chmod +x ./switter
+
+## Requirements
+Have the latest chrome webdriver installed within the **switter** directory. 
+Scraped content is written in the same directory by default. Provide the full path while entering file name to save in custom location.
+
+Crio.Do #IBeleiveInDoing
