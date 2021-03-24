@@ -17,7 +17,7 @@ timeout=0
 correct_login="https://twitter.com/home"
 incorrect_login="https://twitter.com/login"
 while [[ true ]]; do
-	get_url=$(curl -s -g http://localhost:9515/session/$sid/url | jq '.value' | cut -d'"' -f 2) > $log
+	get_url=$(curl -s -G http://localhost:9515/session/$sid/url | jq '.value' | cut -d'"' -f 2) > $log
 	if [[ $get_url == $correct_login ]]; then
 		break
 	elif [[ $get_url =~ $incorrect_login.* ]]; then
@@ -60,10 +60,10 @@ tdate_list=($tdate_string)
 i=0
 while [[ $i < $tweets ]]; do
 	echo "---" >> $fileName.md
-	curl -g $base_url/element/${tname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
-	curl -g $base_url/element/${tuname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
-	curl -g $base_url/element/${tlink_list[$i]}/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
-	curl -g $base_url/element/${tdate_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -G $base_url/element/${tname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -G $base_url/element/${tuname_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -G $base_url/element/${tlink_list[$i]}/attribute/href | jq '.value' | cut -d'"' -f 2 >> $fileName.md
+	curl -G $base_url/element/${tdate_list[$i]}/text | jq '.value' | cut -d'"' -f 2 >> $fileName.md
 	((i++))
 done
 
