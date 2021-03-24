@@ -54,3 +54,55 @@ We can pipe echo to cut to get the same output as before:
 echo "a-b" | cut -d '-' -f 1
 echo "a-b" | cut -d '-' -f 2
 ```
+
+### How to POST and GET data using curl
+curl is a command-line tool and library to transfer data from or to a server. Get the whole html of google search page by:
+
+```bash
+curl www.google.com
+```
+```
+Output
+
+<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage" lang="en-IN"><head><meta content="text/html; charset=UTF-8" ...
+```
+
+To HTTP POST data use `-d` or `--data <data>` ???
+
+
+### Starting remote browser and using xpath
+Here we are working with Google Chrome browser. So we install ChromeDriver from [here](https://chromedriver.chromium.org/downloads).
+
+Start WebDriver:
+```bash
+# to run chromedriver as background process append '&'
+./ chromedriver &
+```
+ChromeDriver starts on port 9515.
+
+Initiate new session and start remote chrome browser
+```bash
+curl -d '{"desiredCapabilities":{"browserName":"chrome"}}' http://localhost:9515/session
+```
+*The above part is unclear even to me. How does this POST data start chrome browser? It would be more intuitve if `./chromdriver` started the browser. Help needed!*
+
+Tip: Pipe the above script to jq. Neater output guarenteed.
+
+Note the **sessionId**. Assign it to a vaiable, say *sid*
+```bash
+sid="<your sessionId>"
+``` 
+
+### Navigating to websites and xpath
+curl communicates with the remote browser using endpoints specified by [W3C](https://w3c.github.io/webdriver/#endpoints).
+
+We can navigate to Twitter log-in page using `/session/{session id}/url` endpoint.
+```bash
+curl -d '{"url":"https://twitter.com/login"}' http://localhost:9515/session/$sid/url
+```
+**Note: Here `'{"url":"https://twitter.com/login"}'` is the JSON argument.**
+
+This gets us to the Twitter login page. Now how do we enter the username and password?
+
+#### xpath to the rescue
+There are a couple of methods we can use to find the elements present on a web-page. `/session/{session id}/elements` returns all the accesible elements with the property specified in the JSON argument.  
