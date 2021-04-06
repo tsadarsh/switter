@@ -11,4 +11,4 @@ Run `./switter` after making it an executable
 Have the latest chrome webdriver installed within the **switter** directory. 
 Scraped content is written in the same directory by default. Provide the full path while entering file name to save in custom location.
 
-Crio.Do #IBeleiveInDoing
+This project was done for Crio.Do 2021 #IBeleiveInDoing.
